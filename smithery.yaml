@@ -1,2 +1,13 @@
+runtime: container
+startCommand:
+  type: http
+  configSchema:
+    type: object
+    required:
+      - seamApiKey
+    properties:
+      seamApiKey:
+        type: string
+        description: Your Seam API key (get it from https://console.seam.co/)
 build:
   dockerBuildPath: ./
