@@ -1,5 +1,7 @@
 # Seam MCP Server
 
+[![smithery badge](https://smithery.ai/badge/seam-mcp)](https://smithery.ai/server/seam-mcp)
+
 A Model Context Protocol (MCP) server for controlling smart locks via the Seam API.
 
 ## Features
@@ -28,6 +30,14 @@ This MCP server provides comprehensive tools for managing smart locks and access
 3. At least one smart lock connected to your Seam account
 
 ## Installation
+
+### Installing via Smithery
+
+To install Seam Smart Locks automatically via [Smithery](https://smithery.ai/server/seam-mcp):
+
+```bash
+npx -y @smithery/cli install seam-mcp
+```
 
 ### Using with Smithery
 
