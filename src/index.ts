@@ -40,7 +40,11 @@ export default function createServer({
     {},
     async () => {
       try {
-        const locks = await getSeamClient().locks.list();
+        console.log('[list_locks] Starting...');
+        const seamClient = getSeamClient();
+        console.log('[list_locks] Seam client initialized');
+        const locks = await seamClient.locks.list();
+        console.log(`[list_locks] Found ${locks.length} locks`);
         return {
           total_locks: locks.length,
           locks: locks.map(lock => ({
@@ -54,7 +58,10 @@ export default function createServer({
           }))
         };
       } catch (error) {
-        throw new Error(`Failed to list locks: ${error instanceof Error ? error.message : String(error)}`);
+        console.error('[list_locks] Error:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : '';
+        throw new Error(`Failed to list locks: ${errorMessage}\nStack: ${errorStack}`);
       }
     }
   );
