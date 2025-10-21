@@ -1,0 +1,41 @@
+{
+  "name": "seam-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for controlling smart locks via Seam API",
+  "type": "module",
+  "module": "./src/index.ts",
+  "bin": {
+    "seam-mcp": "./.smithery/stdio/index.cjs"
+  },
+  "files": [
+    ".smithery"
+  ],
+  "scripts": {
+    "build": "npm run build:stdio",
+    "build:stdio": "smithery build src/index.ts --transport stdio -o .smithery/stdio/index.cjs && echo '#!/usr/bin/env node' | cat - .smithery/stdio/index.cjs > temp && mv temp .smithery/stdio/index.cjs && chmod +x .smithery/stdio/index.cjs",
+    "build:shttp": "smithery build src/index.ts --transport shttp -o .smithery/shttp/index.cjs",
+    "build:all": "npm run build:stdio && npm run build:shttp",
+    "prepare": "npm run build:stdio",
+    "dev": "smithery dev"
+  },
+  "keywords": [
+    "mcp",
+    "seam",
+    "smart-lock",
+    "home-automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.2",
+    "@smithery/sdk": "^1.6.4",
+    "seam": "^1.0.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@smithery/cli": "^1.4.1",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

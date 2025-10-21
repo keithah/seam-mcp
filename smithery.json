@@ -1,0 +1,14 @@
+{
+  "$schema": "https://smithery.ai/schema/smithery.json",
+  "name": "seam-mcp",
+  "description": "Control smart locks through Seam API",
+  "version": "0.1.0",
+  "config": {
+    "seamApiKey": {
+      "type": "string",
+      "description": "Your Seam API key (get it from https://console.seam.co/)",
+      "required": true,
+      "secret": true
+    }
+  }
+}
