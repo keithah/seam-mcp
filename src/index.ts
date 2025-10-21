@@ -13,6 +13,9 @@ export default function createServer({
 }: {
   config: z.infer<typeof configSchema>
 }) {
+  console.log('[Server] Initializing...');
+  console.log('[Server] Config received, keys:', Object.keys(config));
+
   // Create MCP server
   const server = new McpServer({
     name: "seam-mcp-server",
@@ -24,11 +27,20 @@ export default function createServer({
   let seamClient: Seam | null = null;
 
   const getSeamClient = () => {
+    console.log('[SeamClient] Initializing...');
     if (!seamClient) {
       if (!config.seamApiKey) {
+        console.error('[SeamClient] ERROR: No API key');
         throw new Error("Seam API key not configured. Please set seamApiKey in your MCP server configuration.");
       }
-      seamClient = new Seam(config.seamApiKey);
+      console.log('[SeamClient] API key found, length:', config.seamApiKey.length);
+      try {
+        seamClient = new Seam(config.seamApiKey);
+        console.log('[SeamClient] ✓ Client created');
+      } catch (err) {
+        console.error('[SeamClient] ERROR creating:', err);
+        throw err;
+      }
     }
     return seamClient;
   };
