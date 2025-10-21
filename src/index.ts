@@ -20,8 +20,18 @@ export default function createServer({
     version: "0.1.0"
   });
 
-  // Initialize Seam client with API key
-  const seam = new Seam(config.seamApiKey);
+  // Lazy initialization of Seam client - only create when needed
+  let seamClient: Seam | null = null;
+
+  const getSeamClient = () => {
+    if (!seamClient) {
+      if (!config.seamApiKey) {
+        throw new Error("Seam API key not configured. Please set seamApiKey in your MCP server configuration.");
+      }
+      seamClient = new Seam(config.seamApiKey);
+    }
+    return seamClient;
+  };
 
   // Register list_locks tool
   server.tool(
@@ -30,7 +40,7 @@ export default function createServer({
     {},
     async () => {
       try {
-        const locks = await seam.locks.list();
+        const locks = await getSeamClient().locks.list();
         return {
           total_locks: locks.length,
           locks: locks.map(lock => ({
@@ -58,7 +68,7 @@ export default function createServer({
     },
     async ({ device_id }) => {
       try {
-        const lock = await seam.locks.get({ device_id });
+        const lock = await getSeamClient().locks.get({ device_id });
         return {
           device_id: lock.device_id,
           name: lock.properties?.name || lock.device_id,
@@ -88,7 +98,7 @@ export default function createServer({
     },
     async ({ device_id }) => {
       try {
-        const result = await seam.locks.lockDoor({ device_id });
+        const result = await getSeamClient().locks.lockDoor({ device_id });
         return {
           status: "success",
           message: `Successfully locked door ${device_id}`,
@@ -109,7 +119,7 @@ export default function createServer({
     },
     async ({ device_id }) => {
       try {
-        const result = await seam.locks.unlockDoor({ device_id });
+        const result = await getSeamClient().locks.unlockDoor({ device_id });
         return {
           status: "success",
           message: `Successfully unlocked door ${device_id}`,
@@ -130,7 +140,7 @@ export default function createServer({
     },
     async ({ device_id }) => {
       try {
-        const lock = await seam.locks.get({ device_id });
+        const lock = await getSeamClient().locks.get({ device_id });
         const isLocked = lock.properties?.locked;
 
         return {
@@ -161,7 +171,7 @@ export default function createServer({
     },
     async ({ device_id, code, name, starts_at, ends_at }) => {
       try {
-        const lock = await seam.locks.get({ device_id });
+        const lock = await getSeamClient().locks.get({ device_id });
 
         if (!lock.can_program_online_access_codes) {
           throw new Error(`Lock ${lock.properties?.name || device_id} does not support online access codes`);
@@ -176,7 +186,7 @@ export default function createServer({
         if (starts_at) params.starts_at = starts_at;
         if (ends_at) params.ends_at = ends_at;
 
-        const result = await seam.accessCodes.create(params);
+        const result = await getSeamClient().accessCodes.create(params);
 
         return {
           status: "success",
@@ -215,7 +225,7 @@ export default function createServer({
 
         // If location filter is provided, filter devices by location
         if (location_filter) {
-          const allLocks = await seam.locks.list();
+          const allLocks = await getSeamClient().locks.list();
           const filteredLocks = allLocks.filter(lock => {
             const location = lock.location?.location_name || lock.location?.timezone || '';
             const lockName = lock.properties?.name || '';
@@ -243,7 +253,7 @@ export default function createServer({
         if (starts_at) params.starts_at = starts_at;
         if (ends_at) params.ends_at = ends_at;
 
-        const result = await seam.accessCodes.createMultiple(params);
+        const result = await getSeamClient().accessCodes.createMultiple(params);
 
         return {
           status: "success",
@@ -277,7 +287,7 @@ export default function createServer({
         const params: any = {};
         if (device_id) params.device_id = device_id;
 
-        const codes = await seam.accessCodes.list(params);
+        const codes = await getSeamClient().accessCodes.list(params);
 
         return {
           total_codes: codes.length,
@@ -307,7 +317,7 @@ export default function createServer({
     },
     async ({ access_code_id }) => {
       try {
-        await seam.accessCodes.delete({ access_code_id });
+        await getSeamClient().accessCodes.delete({ access_code_id });
 
         return {
           status: "success",
@@ -339,7 +349,7 @@ export default function createServer({
         if (starts_at) params.starts_at = starts_at;
         if (ends_at) params.ends_at = ends_at;
 
-        await seam.accessCodes.update(params);
+        await getSeamClient().accessCodes.update(params);
 
         return {
           status: "success",
