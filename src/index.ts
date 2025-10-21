@@ -78,6 +78,101 @@ export default function createServer({
     }
   );
 
+  // Register get_status tool
+  server.tool(
+    "get_status",
+    "Get a comprehensive status overview of all locks including battery levels, lock states, and any issues",
+    {},
+    async () => {
+      try {
+        console.log('[get_status] Getting status overview...');
+        const locks = await getSeamClient().locks.list();
+
+        // Categorize locks
+        const locked = locks.filter(l => l.properties?.locked === true);
+        const unlocked = locks.filter(l => l.properties?.locked === false);
+        const offline = locks.filter(l => l.properties?.online === false);
+        const online = locks.filter(l => l.properties?.online === true);
+
+        // Battery analysis
+        const lowBattery = locks.filter(l =>
+          l.properties?.battery_level !== undefined &&
+          l.properties.battery_level < 0.3
+        );
+        const mediumBattery = locks.filter(l =>
+          l.properties?.battery_level !== undefined &&
+          l.properties.battery_level >= 0.3 &&
+          l.properties.battery_level < 0.6
+        );
+
+        // Issues
+        const locksWithErrors = locks.filter(l => l.errors && l.errors.length > 0);
+        const locksWithWarnings = locks.filter(l => l.warnings && l.warnings.length > 0);
+
+        // Build status summary
+        const summary = {
+          total_locks: locks.length,
+          lock_states: {
+            locked: locked.length,
+            unlocked: unlocked.length,
+            locked_percentage: locks.length > 0 ? Math.round((locked.length / locks.length) * 100) : 0,
+          },
+          connectivity: {
+            online: online.length,
+            offline: offline.length,
+            offline_locks: offline.map(l => ({
+              name: l.properties?.name || l.device_id,
+              device_id: l.device_id,
+            })),
+          },
+          battery_status: {
+            low_battery_count: lowBattery.length,
+            medium_battery_count: mediumBattery.length,
+            low_battery_locks: lowBattery.map(l => ({
+              name: l.properties?.name || l.device_id,
+              battery_level: Math.round((l.properties?.battery_level || 0) * 100) + '%',
+              device_id: l.device_id,
+            })),
+            medium_battery_locks: mediumBattery.map(l => ({
+              name: l.properties?.name || l.device_id,
+              battery_level: Math.round((l.properties?.battery_level || 0) * 100) + '%',
+              device_id: l.device_id,
+            })),
+          },
+          issues: {
+            errors_count: locksWithErrors.length,
+            warnings_count: locksWithWarnings.length,
+            locks_with_errors: locksWithErrors.map(l => ({
+              name: l.properties?.name || l.device_id,
+              errors: l.errors,
+              device_id: l.device_id,
+            })),
+            locks_with_warnings: locksWithWarnings.map(l => ({
+              name: l.properties?.name || l.device_id,
+              warnings: l.warnings,
+              device_id: l.device_id,
+            })),
+          },
+          all_locks_summary: locks.map(lock => ({
+            name: lock.properties?.name || lock.device_id,
+            status: lock.properties?.locked ? '🔒 Locked' : '🔓 Unlocked',
+            online: lock.properties?.online ? '✅ Online' : '❌ Offline',
+            battery: lock.properties?.battery_level !== undefined
+              ? Math.round(lock.properties.battery_level * 100) + '%'
+              : 'N/A',
+            device_id: lock.device_id,
+          })),
+        };
+
+        console.log(`[get_status] Status: ${locked.length}/${locks.length} locked, ${offline.length} offline, ${lowBattery.length} low battery`);
+        return summary;
+      } catch (error) {
+        console.error('[get_status] Error:', error);
+        throw new Error(`Failed to get status: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  );
+
   // Register get_lock tool
   server.tool(
     "get_lock",
