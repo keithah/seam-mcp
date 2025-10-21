@@ -7,6 +7,7 @@ A Model Context Protocol (MCP) server for controlling smart locks via the Seam A
 This MCP server provides comprehensive tools for managing smart locks and access codes:
 
 ### Lock Control
+- `get_status` - **NEW!** Get a comprehensive overview of all locks with battery levels, connectivity, and issues
 - `list_locks` - List all smart locks connected to your Seam account
 - `get_lock` - Get detailed information about a specific lock
 - `lock_door` - Lock a specific door
@@ -120,11 +121,12 @@ npm run build:all
 Once configured, you can ask Claude to:
 
 ### Lock Control
+- "Show me the status of all my locks" (comprehensive overview)
 - "List all my smart locks"
 - "Unlock the front door"
 - "What's the status of my garage lock?"
 - "Lock the back door"
-- "Show me the battery level of all my locks"
+- "Which locks need new batteries?"
 
 ### Access Code Management
 - "Create an access code 1234 named 'Guest Code' on all my locks in Seattle"
@@ -156,6 +158,16 @@ Check the [Seam Device Catalog](https://www.seam.co/supported-devices) for the c
 ## API Reference
 
 ### Lock Control Tools
+
+#### get_status()
+**NEW!** Get a comprehensive status dashboard of all your locks. Returns:
+- Lock states summary (how many locked/unlocked, percentage)
+- Connectivity status (online/offline locks)
+- Battery level analysis (low/medium battery warnings)
+- Error and warning detection
+- Quick visual summary with emojis
+
+Perfect for: "Show me the status of all my locks" or "Do I have any issues with my locks?"
 
 #### list_locks()
 Returns all locks in your Seam account with basic information including name, manufacturer, model, lock status, battery level, and online status.
